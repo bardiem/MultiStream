@@ -1,13 +1,14 @@
 
 using LyftInterview;
+using System.Diagnostics;
 using Stream = LyftInterview.Stream;
 
 namespace UnitTests
 {
-    public class UnitTest1
+    public class TestTaskTests
     {
         [Fact]
-        public void TestTaskTests()
+        public void TestTask_Tests()
         {
             // Test that Stream is working as expected
             Stream stream = new Stream(new List<int> { 1, 2, 3, 4, 5, 6 });
@@ -44,6 +45,65 @@ namespace UnitTests
             //{
             //    Console.WriteLine("Test Case " + test_case + ": SUCCESS");
             //}
+        }
+
+
+        [Fact]
+        public void Delete_ShouldBeO1WithManyStreams()
+        {
+            // Arrange
+            var rand = new Random();
+
+            var multistream = new MultiStream();
+            
+
+            for(int i = 0; i < 4_000_000; i++)
+            {
+                var newStream = new Stream(new List<int> { rand.Next(), rand.Next() });
+                multistream.Add(newStream);
+            }
+
+            var testStream = new Stream(new List<int> { 1, 5, 7 });
+            multistream.Add(testStream);
+
+            for (int i = 0; i < 4_000_000; i++)
+            {
+                var newStream = new Stream(new List<int> { rand.Next(), rand.Next() });
+                multistream.Add(newStream);
+            }
+
+            // Act
+            var watch = Stopwatch.StartNew();
+            multistream.Remove(testStream);
+            watch.Stop();
+
+            // Assert
+            var elapsedMs = watch.ElapsedMilliseconds;
+            Assert.True(elapsedMs < 5, "The actualCount was not greater than five");
+
+
+        }
+
+        [Fact]
+        public void Delete_ShouldBeO1With1Stream()
+        {
+            // Arrange
+            var multistream = new MultiStream();
+
+
+            var testStream = new Stream(new List<int> { 1, 5, 7 });
+            multistream.Add(testStream);
+
+            // Act
+            var watch = Stopwatch.StartNew();
+            multistream.Remove(testStream);
+            watch.Stop();
+
+
+            // Assert
+            var elapsedMs = watch.ElapsedMilliseconds;
+            Assert.True(elapsedMs < 5, "The actualCount was not greater than five");
+
         }
     }
 }

@@ -45,11 +45,49 @@ public class Stream : IStream
 
 public class MultiStream : IMultiStream
 {
-    OrderedDictionary _lookup = new OrderedDictionary();
+    private long _firstIndex = 0;
+    private long _lastIndex = -1;
+    private long _length = 0;
+
+    private Dictionary<long, IStream> _lookup = new Dictionary<long, IStream>();
+    private Dictionary<IStream, long> _reverseLookup = new Dictionary<IStream, long>();
 
     public void Add(IStream stream)
     {
-        _lookup.Add(stream, stream);
+        _lastIndex += 1;
+        _length++;
+
+        _lookup.Add(_lastIndex, stream);
+        _reverseLookup.Add(stream, _lastIndex);
+
+        RewriteIfNeeded();
+    }
+
+    private void RewriteIfNeeded()
+    {
+        if(_lastIndex < long.MaxValue - 1)
+        {
+            return;
+        }
+
+        var newLookup = new Dictionary<long, IStream>();
+        var newReverse = new Dictionary<IStream, long>();
+
+        long i = 0;
+        foreach (var pair in _lookup)
+        {
+            newLookup.Add(i, pair.Value);
+            newReverse.Add(pair.Value, i);
+            i ++;
+        }
+
+        _lookup = newLookup;
+        _reverseLookup = newReverse;
+
+        _firstIndex = 0;
+        _lastIndex = i;
+        _length = _lookup.Count;
+
     }
 
     public List<int> Read(int n)
@@ -59,7 +97,7 @@ public class MultiStream : IMultiStream
 
         while (_lookup.Count > 0)
         {
-            var first = (IStream)_lookup[0];
+            var first = _lookup[_firstIndex];
             var itemsRead = first.Read(remaindingCount);
             result.AddRange(itemsRead);
 
@@ -74,11 +112,26 @@ public class MultiStream : IMultiStream
         }
 
         return result;
-
     }
 
     public void Remove(IStream stream)
     {
-        _lookup.Remove(stream);
+        var id = _reverseLookup[stream];
+
+        if(_length == 1)
+        {
+            _firstIndex = 0;
+            _lastIndex = 0;
+            _length = 0;
+        } else if(id == _firstIndex)
+        {
+            _firstIndex++;
+        } else if(id == _lastIndex)
+        {
+            _lastIndex--;
+        }
+
+        _lookup.Remove(id);
+        _reverseLookup.Remove(stream);
     }
 }

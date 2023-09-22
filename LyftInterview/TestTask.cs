@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Xml.Linq;
 
 namespace LyftInterview;
@@ -44,14 +45,11 @@ public class Stream : IStream
 
 public class MultiStream : IMultiStream
 {
-    LinkedList<IStream> _lookup = new LinkedList<IStream>();
-    Dictionary<IStream, LinkedListNode<IStream>> _reverseLookup = new Dictionary<IStream, LinkedListNode<IStream>>();
+    OrderedDictionary _lookup = new OrderedDictionary();
 
     public void Add(IStream stream)
     {
-        var node = new LinkedListNode<IStream>(stream);
-        _lookup.AddLast(node);
-        _reverseLookup.Add(stream, node);
+        _lookup.Add(stream, stream);
     }
 
     public List<int> Read(int n)
@@ -61,7 +59,8 @@ public class MultiStream : IMultiStream
 
         while (_lookup.Count > 0)
         {
-            var itemsRead = _lookup.First.Value.Read(remaindingCount);
+            var first = (IStream)_lookup[0];
+            var itemsRead = first.Read(remaindingCount);
             result.AddRange(itemsRead);
 
             if (itemsRead.Count == remaindingCount)
@@ -69,7 +68,7 @@ public class MultiStream : IMultiStream
                 break;
             }
 
-            Remove(_lookup.First.Value);
+            Remove(first);
 
             remaindingCount -= itemsRead.Count;
         }
@@ -80,8 +79,6 @@ public class MultiStream : IMultiStream
 
     public void Remove(IStream stream)
     {
-        var node = _reverseLookup[stream];
-        _lookup.Remove(node);
-        _reverseLookup.Remove(stream);
+        _lookup.Remove(stream);
     }
 }

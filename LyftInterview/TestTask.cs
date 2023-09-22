@@ -75,11 +75,13 @@ public class MultiStream : IMultiStream
         }
 
         return result;
+
     }
 
     public void Remove(IStream stream)
     {
         var node = _reverseLookup[stream];
         _lookup.Remove(node);
+        _reverseLookup.Remove(stream);
     }
 }

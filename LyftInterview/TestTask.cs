@@ -68,32 +68,6 @@ public class MultiStream : IMultiStream
         RewriteIfNeeded();
     }
 
-    private void RewriteIfNeeded()
-    {
-        if(_lastIndex < long.MaxValue)
-        {
-            return;
-        }
-
-        var newLookup = new Dictionary<long, IStream>();
-        var newReverse = new Dictionary<IStream, long>();
-
-        long i = 0;
-        foreach (var pair in _lookup)
-        {
-            newLookup.Add(i, pair.Value);
-            newReverse.Add(pair.Value, i);
-            i ++;
-        }
-
-        _lookup = newLookup;
-        _reverseLookup = newReverse;
-
-        _firstIndex = 0;
-        _lastIndex = _lookup.Count - 1;
-        _length = _lookup.Count;
-    }
-
     public List<int> Read(int n)
     {
         var result = new List<int>();
@@ -139,5 +113,31 @@ public class MultiStream : IMultiStream
 
         _lookup.Remove(id);
         _reverseLookup.Remove(stream);
+    }
+
+    private void RewriteIfNeeded()
+    {
+        if (_lastIndex < long.MaxValue)
+        {
+            return;
+        }
+
+        var newLookup = new Dictionary<long, IStream>();
+        var newReverse = new Dictionary<IStream, long>();
+
+        long i = 0;
+        foreach (var pair in _lookup)
+        {
+            newLookup.Add(i, pair.Value);
+            newReverse.Add(pair.Value, i);
+            i++;
+        }
+
+        _lookup = newLookup;
+        _reverseLookup = newReverse;
+
+        _firstIndex = 0;
+        _lastIndex = _lookup.Count - 1;
+        _length = _lookup.Count;
     }
 }

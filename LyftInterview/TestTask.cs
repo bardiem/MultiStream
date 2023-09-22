@@ -100,19 +100,48 @@ public class MultiStream : IMultiStream
         {
             _firstIndex = 0;
             _lastIndex = -1;
-            _length = 0;
         } else if(id == _firstIndex)
         {
-            _firstIndex++;
-            _length--;
+            _firstIndex = GetNextIndex();
         } else if(id == _lastIndex)
         {
-            _lastIndex--;
-            _length--;
+            _lastIndex = GetPreviousIndex();
         }
 
+        _length--;
         _lookup.Remove(id);
         _reverseLookup.Remove(stream);
+    }
+
+
+    private long GetPreviousIndex()
+    {
+        long prev = _lastIndex - 1;
+        while(prev >= _firstIndex)
+        {
+            if (_lookup.ContainsKey(prev))
+            {
+                return prev;
+            }
+            prev --;
+        }
+
+        return _firstIndex;
+    }
+
+    private long GetNextIndex()
+    {
+        long next = _firstIndex + 1;
+        while (next <= _lastIndex)
+        {
+            if (_lookup.ContainsKey(next))
+            {
+                return next;
+            }
+            next++;
+        }
+
+        return _lastIndex;
     }
 
     private void RewriteIfNeeded()

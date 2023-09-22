@@ -54,6 +54,11 @@ public class MultiStream : IMultiStream
 
     public void Add(IStream stream)
     {
+        if(_length == long.MaxValue - 1)
+        {
+            throw new OverflowException("Multistream is full, you can't add a new stream");
+        }
+
         _lastIndex += 1;
         _length++;
 
@@ -65,7 +70,7 @@ public class MultiStream : IMultiStream
 
     private void RewriteIfNeeded()
     {
-        if(_lastIndex < long.MaxValue - 1)
+        if(_lastIndex < long.MaxValue)
         {
             return;
         }
@@ -85,9 +90,8 @@ public class MultiStream : IMultiStream
         _reverseLookup = newReverse;
 
         _firstIndex = 0;
-        _lastIndex = i;
+        _lastIndex = _lookup.Count - 1;
         _length = _lookup.Count;
-
     }
 
     public List<int> Read(int n)
@@ -121,14 +125,16 @@ public class MultiStream : IMultiStream
         if(_length == 1)
         {
             _firstIndex = 0;
-            _lastIndex = 0;
+            _lastIndex = -1;
             _length = 0;
         } else if(id == _firstIndex)
         {
             _firstIndex++;
+            _length--;
         } else if(id == _lastIndex)
         {
             _lastIndex--;
+            _length--;
         }
 
         _lookup.Remove(id);

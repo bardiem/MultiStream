@@ -32,6 +32,19 @@ namespace UnitTests
             Test(5, multistream.Read(6), new List<int> { 7 });
             Test(6, multistream.Read(2), new List<int> { });
             Test(7, multistream.Read(5), new List<int> { });
+
+            Stream s4 = new Stream(new List<int> { 1, 2, 3, 4, 5 });
+            Stream s5 = new Stream(new List<int> { 6, 7 });
+            Stream s6 = new Stream(new List<int> { 8, 9, 10 });
+            multistream.Add(s4);
+            multistream.Add(s5);
+            multistream.Add(s6);
+
+            Test(4, multistream.Read(6), new List<int> { 1, 2, 3, 4, 5, 6 }); // Read first 6
+            multistream.Remove(s6); // Remove third stream
+            Test(5, multistream.Read(6), new List<int> { 7 });
+            Test(6, multistream.Read(2), new List<int> { });
+            Test(7, multistream.Read(5), new List<int> { });
         }
 
         static void Test(int test_case, List<int> actual, List<int> expected)

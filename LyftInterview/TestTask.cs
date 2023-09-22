@@ -69,7 +69,7 @@ public class MultiStream : IMultiStream
                 break;
             }
 
-            _lookup.RemoveFirst();
+            Remove(_lookup.First.Value);
 
             remaindingCount -= itemsRead.Count;
         }
